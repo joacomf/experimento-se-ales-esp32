@@ -9,7 +9,7 @@ void setup() {
 
 void loop() {
   while (Serial1.available()) {
-    Serial1.write(1);
+    Serial1.write(2);
     delay(1000);
   }
 }
