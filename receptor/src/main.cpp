@@ -1,15 +1,15 @@
 #include <Arduino.h>
+#include <Wire.h>
 
-#define RXD2 16
-#define TXD2 17
 
 void setup() {
-  Serial.begin(115200);
-  Serial1.begin(9600, SERIAL_8N1, RXD2, TXD2);
+  Wire.begin(1);                // join i2c bus with address #8
+  Serial.begin(9600);           // start serial for output
 }
 
 void loop() {
-  while (Serial1.available()) {
-    Serial.print(Serial1.read());
+  while(Wire.available()){
+    Serial.print(Wire.read());
+    delay(1000);
   }
 }
