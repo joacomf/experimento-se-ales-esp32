@@ -22,6 +22,7 @@ void detenerContador(){
   numeroExperimento++;
   tiempoFinal = 0;
   tiempoInicial = 0;
+  bytesRecibidos = 0;
 }
 
 void setup() {
@@ -39,5 +40,7 @@ void loop() {
       bytesRecibidos++;
     }
     detenerContador();
+    Serial.print("Bytes recibidos: ");
+    Serial.println(bytesRecibidos);
   }
 }
