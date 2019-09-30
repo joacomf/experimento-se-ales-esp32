@@ -4,8 +4,9 @@
 #define RXD2 16
 #define TXD2 17
 #define INTERRUPT_PIN 2
+#define CANTIDAD_EXPERIMENTOS 8
 
-int tiempos[8];
+int tiempos[CANTIDAD_EXPERIMENTOS];
 int numeroExperimento = 0;
 volatile int tiempoInicial = 0;
 volatile int tiempoFinal = 0;
@@ -24,7 +25,7 @@ void detenerContador(){
 }
 
 void setup() {
-  memset(tiempos, 8, 0);
+  memset(tiempos, 0, CANTIDAD_EXPERIMENTOS);
   pinMode(INTERRUPT_PIN, INPUT);
   attachInterrupt(digitalPinToInterrupt(INTERRUPT_PIN), iniciarContador, RISING);
   Serial.begin(115200);
