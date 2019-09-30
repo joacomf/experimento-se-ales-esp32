@@ -1,5 +1,4 @@
 #include <Arduino.h>
-#include <Wire.h>
 
 #define RXD2 16
 #define TXD2 17
