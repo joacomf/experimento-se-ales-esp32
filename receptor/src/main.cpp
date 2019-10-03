@@ -2,13 +2,13 @@
 
 #define RXD2 16
 #define TXD2 17
-#define INTERRUPT_PIN 2
-#define CANTIDAD_EXPERIMENTOS 8
+#define INTERRUPT_PIN 23
+#define CANTIDAD_EXPERIMENTOS 3
 
-int tiempos[CANTIDAD_EXPERIMENTOS];
+long tiempos[CANTIDAD_EXPERIMENTOS];
 int numeroExperimento = 0;
-volatile int tiempoInicial = 0;
-volatile int tiempoFinal = 0;
+volatile long tiempoInicial = 0;
+long tiempoFinal = 0;
 int bytesRecibidos = 0;
 
 void iniciarContador(){
@@ -18,6 +18,9 @@ void iniciarContador(){
 void detenerContador(){
   tiempoFinal = millis() - tiempoInicial;
   tiempos[numeroExperimento] = tiempoFinal;
+}
+
+void reiniciarExperimento(){
   numeroExperimento++;
   tiempoFinal = 0;
   tiempoInicial = 0;
@@ -33,13 +36,18 @@ void setup() {
 }
 
 void loop() {
-  if(digitalRead(INTERRUPT_PIN) == HIGH){
+  if(digitalRead(INTERRUPT_PIN) == HIGH && numeroExperimento < CANTIDAD_EXPERIMENTOS){
     while (Serial1.available()) {
-      Serial.print(Serial1.read());
+      Serial1.read();
       bytesRecibidos++;
     }
     detenerContador();
     Serial.print("Bytes recibidos: ");
     Serial.println(bytesRecibidos);
+    Serial.print("Tiempo experimento [ms]: ");
+    Serial.println(tiempos[numeroExperimento]);
+    Serial.println(numeroExperimento);
+    reiniciarExperimento();
   }
+  delay(4000);
 }
