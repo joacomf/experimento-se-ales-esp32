@@ -7,7 +7,7 @@
 
 long tiempos[CANTIDAD_EXPERIMENTOS];
 int numeroExperimento = 0;
-volatile long tiempoInicial = 0;
+long tiempoInicial = 0;
 long tiempoFinal = 0;
 int bytesRecibidos = 0;
 
@@ -36,19 +36,27 @@ void setup() {
 }
 
 void loop(){
-
-  while(digitalRead(INTERRUPT_PIN) == LOW);
-  iniciarContador();
-  byte buffer[64];
-  while (digitalRead(INTERRUPT_PIN) == HIGH && Serial1.available()) {
-    size_t lectura = Serial1.readBytes(buffer, 64);
-    for (size_t i = 0; i < lectura; i++)
-    {
-        Serial.print(buffer[i]);
+  if(numeroExperimento < CANTIDAD_EXPERIMENTOS){
+    while(digitalRead(INTERRUPT_PIN) == LOW);
+    iniciarContador();
+    byte buffer[64];
+    while (digitalRead(INTERRUPT_PIN) == HIGH && Serial1.available()) {
+      size_t lectura = Serial1.readBytes(buffer, 64);
+      for (size_t i = 0; i < lectura; i++){
+          Serial.print(buffer[i]);
+      }
     }
+    detenerContador();
+    reiniciarExperimento();
+    delay(500);
+  } else {
+    Serial.print("Tiempos de los experimentos: ");
+    for (size_t i = 0; i < CANTIDAD_EXPERIMENTOS; i++){
+      Serial.print(tiempos[i]);
+      Serial.print(", ");
+    }
+    delay(2000);
   }
-  detenerContador();
-  delay(500);
 }
 
 // void loopa() {
