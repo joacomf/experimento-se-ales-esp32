@@ -6,7 +6,7 @@
 #define CANTIDAD_DE_EXPERIMENTOS 3
 
 //int bytesAEnviar[8] = {2, 20, 200, 2048, 20480, 204800, 2097152, 20971520};
-int bytesAEnviar[2] = {2, 20};
+int bytesAEnviar[] = {2, 20, 100};
 int indice = 0;
 
 void setup() {
