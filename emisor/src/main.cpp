@@ -33,7 +33,7 @@ void loop() {
     Serial1.write(buffer, BUFFER_SIZE);
     Serial1.flush();
     bytes_a_enviar -= BUFFER_SIZE;
-    delay(1);
+    delayMicroseconds(800);
   }
 
   Serial1.end();

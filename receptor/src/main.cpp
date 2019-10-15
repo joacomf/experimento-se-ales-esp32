@@ -20,19 +20,23 @@ void loop() {
 
   byte buffer[BUFFER_SIZE] = {};
   boolean recibio = false;
+
   int iteraciones = 0;
   int iteraciones_esperadas = (int) (BYTES_A_ENVIAR / BUFFER_SIZE);
 
-  while (Serial1.available() || iteraciones < 1000) {
+  while (Serial1.available() || iteraciones < iteraciones_esperadas) {
     Serial1.readBytes(buffer, BUFFER_SIZE);
     int recibidos = 0;
+
     for (size_t i = 0; i < BUFFER_SIZE; i++){
+
       if (buffer[i] == 1){
         cantidad_bytes_recibidos++;
         recibidos++;
         recibio = true;
       }
     }
+
     if (recibio){
       iteraciones++;
       recibio = false;
