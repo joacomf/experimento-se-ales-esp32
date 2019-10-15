@@ -18,19 +18,30 @@ void loop() {
 
   unsigned long tiempo_inicio = millis();
 
-  byte buffer[2000] = {};
-  while (Serial1.available() || cantidad_bytes_recibidos <= 180000) {
-    Serial1.readBytes(buffer, 2000);
+  byte buffer[BUFFER_SIZE] = {};
+  boolean recibio = false;
+  int iteraciones = 0;
+  int iteraciones_esperadas = (int) (BYTES_A_ENVIAR / BUFFER_SIZE);
 
-    for (size_t i = 0; i < 2000; i++){
+  while (Serial1.available() || iteraciones < 1000) {
+    Serial1.readBytes(buffer, BUFFER_SIZE);
+    int recibidos = 0;
+    for (size_t i = 0; i < BUFFER_SIZE; i++){
       if (buffer[i] == 1){
         cantidad_bytes_recibidos++;
+        recibidos++;
+        recibio = true;
       }
     }
+    if (recibio){
+      iteraciones++;
+      recibio = false;
+    }
+
   }
 
   unsigned long tiempo_final = millis() - tiempo_inicio;
-  
+
   Serial.println("Bytes Recibidos");
   Serial.println(cantidad_bytes_recibidos);
   Serial.println("Tiempo");

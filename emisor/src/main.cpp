@@ -25,10 +25,18 @@ void loop() {
   digitalWrite(LED, HIGH);
   digitalWrite(FLAG_DE_COMIENZO, HIGH);
 
-  for (size_t i = 0; i < BYTES_A_ENVIAR && Serial1.available(); i++){
-    byte datoAEnviar = 1;
-    Serial1.write(datoAEnviar);
+  int bytes_a_enviar = BYTES_A_ENVIAR;
+  byte buffer[BUFFER_SIZE];
+  memset(buffer, 1, BUFFER_SIZE);
+
+  while (bytes_a_enviar > 0){
+    Serial1.write(buffer, BUFFER_SIZE);
+    Serial1.flush();
+    bytes_a_enviar -= BUFFER_SIZE;
+    delay(1);
   }
+
+  Serial1.end();
 
   digitalWrite(LED_FIN, HIGH);
   while(true);
