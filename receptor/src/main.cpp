@@ -13,19 +13,41 @@ void setup() {
   pinMode(FLAG_DE_COMIENZO, INPUT);
 }
 
+void enviarFlagDeRecepcionCon(int recibidos) {
+  Serial.println("Esperando a enviar");
+  Serial1.availableForWrite();
+  Serial.println("Enviando");
+
+  int capacidad = sizeof(int);
+  byte buffer[capacidad] = {};
+  memcpy(buffer, &recibidos, capacidad);
+ 
+  Serial1.write(buffer, capacidad);
+  Serial.println("Listo envio");
+  Serial1.flush();
+}
+
 void loop() {
   while (digitalRead(FLAG_DE_COMIENZO) == LOW) { Serial.println("esperando"); }
 
   unsigned long tiempo_inicio = millis();
+  int recibidos_en_iteracion = 0;
 
-  byte buffer[2000] = {};
-  while (Serial1.available() || cantidad_bytes_recibidos <= 180000) {
-    Serial1.readBytes(buffer, 2000);
+  byte buffer[BUFFER_SIZE] = {};
 
-    for (size_t i = 0; i < 2000; i++){
+  while (cantidad_bytes_recibidos <= BYTES_A_ENVIAR - 50) {
+    recibidos_en_iteracion = 0;
+    Serial1.readBytes(buffer, BUFFER_SIZE);
+
+    for (size_t i = 0; i < BUFFER_SIZE; i++){
       if (buffer[i] == 1){
         cantidad_bytes_recibidos++;
+        recibidos_en_iteracion++;
       }
+    }
+
+    if(recibidos_en_iteracion > 0){
+      enviarFlagDeRecepcionCon(recibidos_en_iteracion);
     }
   }
 
