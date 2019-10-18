@@ -10,41 +10,25 @@ long cantidad_bytes_recibidos = 0;
 void setup() {
   Serial.begin(115200);
   Serial1.begin(BAUDIOS, SERIAL_8N1, RXD2, TXD2);
-  pinMode(FLAG_DE_COMIENZO, INPUT);
 }
 
-void enviarFlagDeRecepcionCon(int recibidos) {
-  Serial.println("Esperando a enviar");
-  Serial1.availableForWrite();
-  Serial.println("Enviando");
-
-  int capacidad = sizeof(int);
-  byte buffer[capacidad] = {};
-  memcpy(buffer, &recibidos, capacidad);
- 
-  Serial1.write(buffer, capacidad);
-  Serial.println("Listo envio");
+void enviarFlagDeRecepcionCon(byte recibidos) {
+  Serial1.write(recibidos);
   Serial1.flush();
 }
 
 void loop() {
-  while (digitalRead(FLAG_DE_COMIENZO) == LOW) { Serial.println("esperando"); }
-
-  unsigned long tiempo_inicio = millis();
-  int recibidos_en_iteracion = 0;
 
   byte buffer[BUFFER_SIZE] = {};
+  delay(3000);
+  enviarFlagDeRecepcionCon(0);
 
-  while (cantidad_bytes_recibidos <= BYTES_A_ENVIAR - 50) {
-    recibidos_en_iteracion = 0;
-    Serial1.readBytes(buffer, BUFFER_SIZE);
+  unsigned long tiempo_inicio = millis();
 
-    for (size_t i = 0; i < BUFFER_SIZE; i++){
-      if (buffer[i] == 1){
-        cantidad_bytes_recibidos++;
-        recibidos_en_iteracion++;
-      }
-    }
+  while (cantidad_bytes_recibidos < BYTES_A_ENVIAR) {
+    byte recibidos_en_iteracion = Serial1.readBytes(buffer, BUFFER_SIZE);
+
+    cantidad_bytes_recibidos += recibidos_en_iteracion;
 
     if(recibidos_en_iteracion > 0){
       enviarFlagDeRecepcionCon(recibidos_en_iteracion);

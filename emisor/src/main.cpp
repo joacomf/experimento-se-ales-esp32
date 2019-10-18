@@ -7,7 +7,7 @@
 #define LED 2
 #define LED_FIN 15
 
-uint32_t bytes_recibidos = 0;
+int bytes_recibidos = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -15,33 +15,21 @@ void setup() {
 
   pinMode(LED, OUTPUT);
   pinMode(LED_FIN, OUTPUT);
-  pinMode(FLAG_DE_COMIENZO, OUTPUT);
 
   digitalWrite(LED, LOW);
-  digitalWrite(FLAG_DE_COMIENZO, LOW);
 
-  delay(1500);
   Serial.println("Inicia");
 }
 
 void comenzarEnvio(){
   digitalWrite(LED, HIGH);
-  digitalWrite(FLAG_DE_COMIENZO, HIGH);
 }
 
 void esperarFlagDeRecepcion(){
-  Serial.println("Esperando recepción");
-  byte bytes[4] = {0, 0, 0, 0};
-
   while (!Serial1.available());
+  byte recibidos = Serial1.read();
 
-  bytes[0] = Serial1.read();
-  bytes[1] = Serial1.read();
-  bytes[2] = Serial1.read();
-  bytes[3] = Serial1.read();
-
-  bytes_recibidos += bytes[0] + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24);
-  Serial.println(bytes_recibidos);
+  bytes_recibidos += recibidos;
 }
 
 void enviarPorcionDeDatosEn(byte buffer[]){
@@ -65,12 +53,11 @@ void loop() {
   byte buffer[BUFFER_SIZE];
   memset(buffer, datoAEnviar, BUFFER_SIZE);
 
-  delay(500);
   while (bytes_a_enviar != 0){
-    enviarPorcionDeDatosEn(buffer);
     esperarFlagDeRecepcion();
+    enviarPorcionDeDatosEn(buffer);
     bytes_a_enviar -= BUFFER_SIZE;
   }
-
+  esperarFlagDeRecepcion();
   terminarEnvio();
 }
