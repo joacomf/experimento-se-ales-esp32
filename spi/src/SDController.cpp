@@ -57,15 +57,16 @@ char *SDController::readFile(unsigned int size)
 
     Serial.print("Read from file: ");
     // dataNumber es el número de registro de dato que quiero leer desde 0.
-    char *value = new char[size + 1];
+    char *value = new char[size+1];
     // file.seek(position);
 
-    unsigned long readed = 0;
-    while (file.available())
+    if(file.available())
     {
-        value[readed++] = file.read();
+        for(int i = 0;i<size;i++){
+            value[i] = (char) file.read();
+        }
     }
-    value[readed] = '\0';
+    value[size] = '\0';
     Serial.println(value);
     return value;
 }
