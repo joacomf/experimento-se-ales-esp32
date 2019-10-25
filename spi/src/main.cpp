@@ -41,10 +41,10 @@ void experimento(long bytes_a_escribir)
   Serial.println(bytes_a_escribir);
   Serial.println("Bytes escritos correctamente: ");
   Serial.println(resultado);
-  Serial.println("Tiempo de Prueba (segundos): ");
-  Serial.println(1000 * tiempo_prueba);
-  Serial.println("Taza de transferencia (bytes/s): ");
-  Serial.println(1000 * resultado / tiempo_prueba);
+  Serial.println("Tiempo de Prueba (msegundos): ");
+  Serial.println(tiempo_prueba);
+  Serial.println("Taza de transferencia (bytes/ms): ");
+  Serial.println(resultado / tiempo_prueba);
 }
 
 void setup()
