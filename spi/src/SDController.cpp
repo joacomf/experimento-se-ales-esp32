@@ -21,14 +21,10 @@ using namespace std;
 
 SDController::SDController()
 {
-    if (checkStart()) // Pendiente resolver si esto no da true
+    if (checkStart())
     {
-        // this->deleteFile(); // Para pruebas independientes
-        File file = SD.open(path);
-        lastDataStore = file.size() / dataSize;
+        File file = SD.open(path, FILE_WRITE);
         file.close();
-        Serial.print("Cantidad de datos existentes: ");
-        Serial.println(lastDataStore);
     }
 }
 
@@ -48,7 +44,7 @@ bool SDController::checkStart()
     return true;
 }
 
-char *SDController::readFile()
+char *SDController::readFile(unsigned int size)
 {
     Serial.printf("Reading file: %s\n", path);
 
@@ -61,7 +57,7 @@ char *SDController::readFile()
 
     Serial.print("Read from file: ");
     // dataNumber es el número de registro de dato que quiero leer desde 0.
-    char *value = new char[dataSize + 1];
+    char *value = new char[size + 1];
     // file.seek(position);
 
     unsigned long readed = 0;
@@ -82,14 +78,14 @@ void SDController::appendFile(string data)
         Serial.println("Failed to open file for appending");
         return;
     }
-    if (file.write((unsigned char *)data.c_str(), dataSize))
+    if (file.write((unsigned char *)data.c_str(), data.size() * 8))
     {
-        lastDataStore++;
     }
     else
     {
         Serial.println("Append failed");
     }
+    file.close();
 }
 
 void SDController::deleteFile()
@@ -103,9 +99,4 @@ void SDController::deleteFile()
     {
         Serial.println("Delete failed");
     }
-}
-
-unsigned long SDController::getNumberOfData()
-{
-    return lastDataStore;
 }
