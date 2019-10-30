@@ -8,6 +8,7 @@
 #define PUERTO 80
 #define IP_SERVIDOR "192.168.1.2"
 #define INICIO "/inicio"
+#define DATOS "/datos"
 #define FIN "/fin"
 #define OK "ok"
 
@@ -44,6 +45,64 @@ String url(String metodo) {
   return resultado;
 }
 
+bool enviarInicio() {
+  HTTPClient http;
+  http.begin(url(INICIO));
+  http.addHeader("Content-Type", "text/plain");
+
+  int codigoRespuestaHttp = http.POST("");
+
+  if (codigoRespuestaHttp > 0) {
+    String respuesta = http.getString();
+    
+    if (respuesta == OK) {
+      Serial.println("Recibido correctamente del servidor");
+    } else {
+      Serial.print("No se recibio lo esperado. En cambio, se recibio: ");
+      Serial.println(respuesta);
+      return false;
+    }
+
+  } else {
+    Serial.print("Error en el envio del POST: ");
+    Serial.println(codigoRespuestaHttp);
+    return false;
+  }
+
+  http.end();
+  return true;
+}
+
+bool enviarDatos() {
+  HTTPClient http;
+  http.begin(url(DATOS));
+  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  http.POST("datos=1111111111111111");
+  http.end();
+  return true;
+}
+
+bool enviarFin() {
+  HTTPClient http;
+  http.begin(url(FIN));
+  http.addHeader("Content-Type", "text/plain");
+
+  int codigoRespuestaHttp = http.POST("");
+
+  if (codigoRespuestaHttp > 0) {
+    String respuesta = http.getString();
+    Serial.print("Cantidad de bytes recibidos por el servidor:");
+    Serial.println(respuesta);
+  } else {
+    Serial.print("Error en el envio del POST: ");
+    Serial.println(codigoRespuestaHttp);
+    return false;
+  }
+
+  http.end();
+  return true;
+}
+
 void setup() {
   Serial.begin(BAUDIOS);
   
@@ -57,37 +116,14 @@ void setup() {
   }
 
   Serial.println("Conectado");
-}
-
-void loop() {
 
   if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(url(INICIO));
-    http.addHeader("Content-Type", "text/plain");
-
-    int httpResponseCode = http.POST("");
-
-    if (httpResponseCode > 0) {
-      String response = http.getString();
-      
-      if (response == OK) {
-        Serial.println("Recibido correctamente del servidor");
-      } else {
-        Serial.print("No se recibio lo esperado. En cambio, se recibio: ");
-        Serial.println(response);
-      }
-
-    } else {
-      Serial.print("Error en el envio del POST: ");
-      Serial.println(httpResponseCode);
-    }
-
-    http.end();
-
+    if (!enviarInicio()) return;
+    if (!enviarDatos()) return;
+    enviarFin();
   } else {
     Serial.println("Error en la conexion WiFi");   
   }
-
-  delay(1000);
 }
+
+void loop() {}
