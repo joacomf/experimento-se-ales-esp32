@@ -1,0 +1,3 @@
+// agregar las credenciales y cambiar el nombre del archivo por credenciales.h
+#define SSID
+#define PASSWORD
