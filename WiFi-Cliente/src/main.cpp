@@ -6,11 +6,12 @@
 #define BAUDIOS 115200
 #define ESPERA_CONEXION 1000
 #define PUERTO 80
-#define IP_SERVIDOR "192.168.4.1"
-#define INICIO_ENVIO "inicio envio"
-#define FIN_ENVIO "fin envio"
+#define IP_SERVIDOR "192.168.1.2"
+#define INICIO "/inicio"
+#define FIN "/fin"
+#define OK "ok"
 
-WiFiClient client;
+HTTPClient client;
 
 bool conectarARed(const char* ssid, const char* pass) {
   int cantidadRedes = WiFi.scanNetworks();
@@ -36,6 +37,13 @@ bool conectarARed(const char* ssid, const char* pass) {
   return false;
 }
 
+String url(String metodo) {
+  String resultado = "http://";
+  resultado += IP_SERVIDOR;
+  resultado += metodo;
+  return resultado;
+}
+
 void setup() {
   Serial.begin(BAUDIOS);
   
@@ -49,11 +57,37 @@ void setup() {
   }
 
   Serial.println("Conectado");
-  if (client.connect(IP_SERVIDOR, PUERTO)) {
-    Serial.println("Conectado a servidor");
-    client.println(INICIO_ENVIO);
-    client.println();
-  }
 }
 
-void loop() {}
+void loop() {
+
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    http.begin(url(INICIO));
+    http.addHeader("Content-Type", "text/plain");
+
+    int httpResponseCode = http.POST("");
+
+    if (httpResponseCode > 0) {
+      String response = http.getString();
+      
+      if (response == OK) {
+        Serial.println("Recibido correctamente del servidor");
+      } else {
+        Serial.print("No se recibio lo esperado. En cambio, se recibio: ");
+        Serial.println(response);
+      }
+
+    } else {
+      Serial.print("Error en el envio del POST: ");
+      Serial.println(httpResponseCode);
+    }
+
+    http.end();
+
+  } else {
+    Serial.println("Error en la conexion WiFi");   
+  }
+
+  delay(1000);
+}
