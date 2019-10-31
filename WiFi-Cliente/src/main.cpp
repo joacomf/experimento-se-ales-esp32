@@ -11,6 +11,7 @@
 #define DATOS "/datos"
 #define FIN "/fin"
 #define OK "ok"
+#define CANTIDAD_BYTES 20
 
 HTTPClient client;
 
@@ -45,6 +46,16 @@ String url(String metodo) {
   return resultado;
 }
 
+String datos() {
+  String resultado = "datos=";
+
+  for (int i = 0; i < CANTIDAD_BYTES; i++) {
+    resultado += "1";
+  }
+
+  return resultado;
+}
+
 bool enviarInicio() {
   HTTPClient http;
   http.begin(url(INICIO));
@@ -73,13 +84,12 @@ bool enviarInicio() {
   return true;
 }
 
-bool enviarDatos() {
+void enviarDatos() {
   HTTPClient http;
   http.begin(url(DATOS));
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  http.POST("datos=1111111111111111");
+  http.POST(datos());
   http.end();
-  return true;
 }
 
 bool enviarFin() {
@@ -91,8 +101,13 @@ bool enviarFin() {
 
   if (codigoRespuestaHttp > 0) {
     String respuesta = http.getString();
-    Serial.print("Cantidad de bytes recibidos por el servidor:");
-    Serial.println(respuesta);
+    int indiceSeparador = respuesta.indexOf(",");
+    String cantidadBytes = respuesta.substring(0, indiceSeparador);
+    String tiempo = respuesta.substring(indiceSeparador + 1);
+    Serial.print("Cantidad de bytes recibidos por el servidor: ");
+    Serial.println(cantidadBytes);
+    Serial.print("Tiempo transcurrido: ");
+    Serial.println(tiempo);
   } else {
     Serial.print("Error en el envio del POST: ");
     Serial.println(codigoRespuestaHttp);
@@ -119,7 +134,7 @@ void setup() {
 
   if (WiFi.status() == WL_CONNECTED) {
     if (!enviarInicio()) return;
-    if (!enviarDatos()) return;
+    enviarDatos();
     enviarFin();
   } else {
     Serial.println("Error en la conexion WiFi");   

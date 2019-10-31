@@ -16,11 +16,15 @@ IPAddress gateway(192, 168, 1, 1);
 IPAddress subnet(255, 255, 255, 0);
 
 WebServer server(PUERTO);
+
+unsigned long tiempoInicial = 0;
+unsigned long tiempoFinal = 0;
 unsigned long bytesRecibidos = 0;
 
 void manejarInicio() {
   Serial.println("Recibido INICIO");
   server.send(200, "text/plain", OK);
+  tiempoInicial = millis();
 }
 
 void manejarDatos() {
@@ -33,8 +37,13 @@ void manejarDatos() {
 }
 
 void manejarFin() {
+  tiempoFinal = millis() - tiempoInicial;
   Serial.println("Recibido FIN");
-  server.send(200, "text/plain", String(bytesRecibidos));
+  String respuesta = String(bytesRecibidos) + String(',') + String(tiempoFinal);
+  server.send(200, "text/plain", respuesta);
+  tiempoInicial = 0;
+  tiempoFinal = 0;
+  bytesRecibidos = 0;
 }
 
 void manejarNotFound(){
