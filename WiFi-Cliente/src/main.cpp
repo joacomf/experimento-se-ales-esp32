@@ -6,6 +6,7 @@
 #define BAUDIOS 115200
 #define ESPERA_CONEXION 1000
 #define PUERTO 80
+#define TAMANIO_PAQUETE 6144
 #define IP_SERVIDOR "192.168.1.2"
 #define INICIO "/inicio"
 #define DATOS "/datos"
@@ -46,10 +47,10 @@ String url(String metodo) {
   return resultado;
 }
 
-String datos() {
+String datos(unsigned cantidad) {
   String resultado = "datos=";
 
-  for (int i = 0; i < CANTIDAD_BYTES; i++) {
+  for (int i = 0; i < cantidad; i++) {
     resultado += "1";
   }
 
@@ -86,10 +87,26 @@ bool enviarInicio() {
 
 void enviarDatos() {
   HTTPClient http;
-  http.begin(url(DATOS));
-  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  http.POST(datos());
-  http.end();
+  long cantidadBytesRestantes = CANTIDAD_BYTES;
+
+  while (cantidadBytesRestantes > 0) {
+    unsigned cantidadBytesAEnviar = TAMANIO_PAQUETE;
+
+    if (cantidadBytesRestantes < TAMANIO_PAQUETE) {
+      cantidadBytesAEnviar = cantidadBytesRestantes;
+    }
+
+    // Serial.print("Enviando ");
+    // Serial.print(cantidadBytesAEnviar);
+    // Serial.print(" bytes");
+    http.begin(url(DATOS));
+    http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+    http.POST(datos(cantidadBytesAEnviar));
+    http.end();
+    cantidadBytesRestantes -= TAMANIO_PAQUETE;
+    // Serial.print(", quedan ");
+    // Serial.println(cantidadBytesRestantes);
+  }
 }
 
 bool enviarFin() {
