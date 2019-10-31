@@ -1,26 +1,36 @@
 #include "Arduino.h"
-#include <SDController.h>
+#include <SDManager.h>
+#include <NumberToString.h>
+#include "FileIterator.h"
 #define TAMANO_PAQUETES 20
+#define SD_CARD_PIN 5
 
-SDController sdController = SDController();
+SDManager *sdManager;
+
 int experimentos_tamanos[] = {20, 200, 2000, 20000};
 
-long checkear_caracteres_validos(char *valores, long n)
+long checkear_caracteres_validos(std::string filepath, long n)
 {
   long resultado = 0;
-  for (int i = 0; i < n; i++)
-  {
-    if (valores[i] == '1')
+  FileIterator fileIterator = FileIterator(filepath.c_str(), sdManager);
+  for(std::string line; fileIterator.hasNext(); fileIterator.nextLine()){
+    for (int i = 0; i < n; i++)
     {
-      resultado++;
+      if (line.c_str()[i] == '1')
+      {
+        resultado++;
+      }
     }
   }
+
   return resultado;
 }
 
 void experimento(long bytes_a_escribir)
 {
-  sdController.deleteFile();
+  std::string filename = std::string(numberToString<long>(bytes_a_escribir));
+  std::string filepath = std::string("/") + filename + std::string(".txt");
+  sdManager->deleteFile(filepath.c_str());
   int contador_datos_enviados = 0;
   unsigned long tiempo_inicio = millis();
   int tamano_paquetes = TAMANO_PAQUETES;
@@ -30,13 +40,15 @@ void experimento(long bytes_a_escribir)
     {
       tamano_paquetes = bytes_a_escribir - contador_datos_enviados;
     }
-    char str[tamano_paquetes];
-    memset(str, '1', tamano_paquetes);
-    sdController.appendFile(string(str));
+    std::string data = "";
+    for(int i = 0; i < tamano_paquetes ; i++){
+      data += "1";
+    }
+    sdManager->appendFile(filepath.c_str(), data);
     contador_datos_enviados += tamano_paquetes;
   }
   unsigned long tiempo_prueba = millis() - tiempo_inicio;
-  long resultado = checkear_caracteres_validos(sdController.readFile(bytes_a_escribir), bytes_a_escribir);
+  long resultado = checkear_caracteres_validos(filepath, bytes_a_escribir);
   Serial.println("Bytes a escribir:");
   Serial.println(bytes_a_escribir);
   Serial.println("Bytes escritos correctamente: ");
@@ -49,13 +61,14 @@ void experimento(long bytes_a_escribir)
 
 void setup()
 {
+  sdManager = new SDManager(SD_CARD_PIN);
   Serial.begin(115200);
   delay(4000);
 
   for (int i = 0; i < sizeof(experimentos_tamanos) / sizeof(int); i++)
-    {
-      experimento(experimentos_tamanos[i]);
-    }
+  {
+    experimento(experimentos_tamanos[i]);
+  }
 }
 
 void loop()
