@@ -2,24 +2,37 @@
 #include <SDManager.h>
 #include <NumberToString.h>
 #include "FileIterator.h"
-#define TAMANO_PAQUETES 20
+#define CHARACTER 'X'
+#define TAMANO_PAQUETES 50000
 #define SD_CARD_PIN 5
 
 SDManager *sdManager;
 
-int experimentos_tamanos[] = {20, 200, 2000, 20000};
+int experimentos_tamanos[] = {20, 200, 2 * 1024, 20 * 1024, 200 * 1024};
 
-long checkear_caracteres_validos(std::string filepath, long n)
+long checkear_caracteres_validos(std::string filepath, long max)
 {
+  long contador = 0;
   long resultado = 0;
   FileIterator fileIterator = FileIterator(filepath.c_str(), sdManager);
-  for(std::string line; fileIterator.hasNext(); fileIterator.nextLine()){
-    for (int i = 0; i < n; i++)
+  std::string line;
+  while (fileIterator.hasNext()){
+    line = fileIterator.nextLine();
+    for (int i = 0; i < TAMANO_PAQUETES; i++)
     {
-      if (line.c_str()[i] == '1')
+      contador++;
+      if (contador > max)
+      {
+        break;
+      }
+      if (line.c_str()[i] == CHARACTER)
       {
         resultado++;
       }
+    }
+    if (contador > max)
+    {
+      break;
     }
   }
 
@@ -41,34 +54,45 @@ void experimento(long bytes_a_escribir)
       tamano_paquetes = bytes_a_escribir - contador_datos_enviados;
     }
     std::string data = "";
-    for(int i = 0; i < tamano_paquetes ; i++){
-      data += "1";
+    for (int i = 0; i < tamano_paquetes; i++)
+    {
+      data += CHARACTER;
     }
+    data += "\n";
     sdManager->appendFile(filepath.c_str(), data);
     contador_datos_enviados += tamano_paquetes;
   }
   unsigned long tiempo_prueba = millis() - tiempo_inicio;
   long resultado = checkear_caracteres_validos(filepath, bytes_a_escribir);
-  Serial.println("Bytes a escribir:");
+  Serial.print("Bytes a escribir: ");
   Serial.println(bytes_a_escribir);
-  Serial.println("Bytes escritos correctamente: ");
-  Serial.println(resultado);
-  Serial.println("Tiempo de Prueba (msegundos): ");
-  Serial.println(tiempo_prueba);
-  Serial.println("Taza de transferencia (bytes/ms): ");
-  Serial.println(resultado / tiempo_prueba);
+  Serial.print("Bytes escritos correctamente: ");
+  Serial.print(100 * float(resultado)/float(bytes_a_escribir));
+  Serial.println(" %");
+  Serial.print("Tiempo de Prueba: ");
+  Serial.print(tiempo_prueba);
+  Serial.println(" ms");
+  Serial.print("Taza de transferencia: ");
+  Serial.print(1000 * float(resultado) / float(tiempo_prueba) / 1024);
+  Serial.println(" KB/s");
+  Serial.println("|");
 }
 
 void setup()
 {
-  sdManager = new SDManager(SD_CARD_PIN);
   Serial.begin(115200);
-  delay(4000);
-
-  for (int i = 0; i < sizeof(experimentos_tamanos) / sizeof(int); i++)
+  Serial.println("\n\n\n");
+  Serial.println("--------------------------------");
+  Serial.println("Iniciando experimento\n");
+  sdManager = new SDManager(SD_CARD_PIN);
+  int cantidad_experimentos = sizeof(experimentos_tamanos) / sizeof(int);
+  for (int i = 0; i < cantidad_experimentos; i++)
   {
     experimento(experimentos_tamanos[i]);
   }
+
+  Serial.println("Fin");
+  Serial.println("--------------------------------");
 }
 
 void loop()

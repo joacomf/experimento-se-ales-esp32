@@ -18,7 +18,7 @@ std::string FileIterator::nextLine()
         return line;
     }
   if(this->file.available()){
-    line = this->file.readStringUntil('\n').c_str();
+    line = std::string(this->file.readStringUntil('\n').c_str());
   }
   return line;
 }
